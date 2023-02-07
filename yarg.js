@@ -2,6 +2,7 @@ const yargs = require("yargs");
 // console.log(yargs.argv);
 const fs = require("fs");
 const validator = require("validator");
+const contacts = require("./contact.js");
 
 yargs.command({
   command: "add",
@@ -34,34 +35,31 @@ yargs.command({
 });
 const data = yargs.parse();
 
-const file = fs.readFileSync("./data/contacts.json", "utf-8");
-const myData = JSON.parse(file);
-
-// cek unique data
-const cek = myData.find((x) => x.name.toLowerCase() === data.name.toLowerCase());
-if (cek) {
-  console.log("Nama sudah ada");
-} else {
-  // validasi nomor telepone sesuai
-  if (!validator.isMobilePhone(data.mobile, "id-ID")) {
-    console.log("Format telephone tidak sesuai");
+const main = () => {
+  const file = fs.readFileSync("./data/contacts.json", "utf-8");
+  const myData = JSON.parse(file);
+  const cek = myData.find((x) => x.name.toLowerCase() === data.name.toLowerCase());
+  if (cek) {
+    console.log("Nama sudah ada");
   } else {
-    // jika email tidak kosong
-    if (data.email != null) {
-      // validasi email (jika tidak sesuai)
-      if (!validator.isEmail(data.email)) {
-        console.log("Format email tidak sesuai");
-      } else {
-        // jika email sesuai
-        myData.push({ name: data.name, email: data.email, mobile: data.mobile });
-        const content = JSON.stringify(myData);
-        fs.writeFileSync("./data/contacts.json", content);
-      }
+    if (!validator.isMobilePhone(data.mobile, "id-ID")) {
+      console.log("Format telephone tidak sesuai");
     } else {
-      // jika email kosong
-      myData.push({ name: data.name, email: data.email, mobile: data.mobile });
-      const content = JSON.stringify(myData);
-      fs.writeFileSync("./data/contacts.json", content);
+      // jika email tidak kosong
+      if (data.email != null) {
+        // validasi email (jika tidak sesuai)
+        if (!validator.isEmail(data.email)) {
+          console.log("Format email tidak sesuai");
+        } else {
+          // jika email sesuai
+          contacts.saveContact(data.name, data.email, data.mobile);
+        }
+      } else {
+        // jika email kosong
+        contacts.saveContact(data.name, data.email, data.mobile);
+      }
     }
   }
-}
+};
+
+main();
